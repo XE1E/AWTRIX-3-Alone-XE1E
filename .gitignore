@@ -1,0 +1,47 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Build
+build/
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Backups
+*.bak
+*.backup
+*~
+
+# Sensitive data
+secrets.h
+credentials.h
+api_keys.h
+
+# Node modules (si usas herramientas JS)
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# Temporary
+tmp/
+temp/
