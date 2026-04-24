@@ -176,15 +176,111 @@ Solo necesitas flashearlo:
 
 ---
 
+## AWTRIX 2 vs AWTRIX 3 para Desarrollo Standalone
+
+| Aspecto | AWTRIX 2 | AWTRIX 3 |
+|---------|----------|----------|
+| Arquitectura | ESP8266 + Servidor Java | **Todo en ESP32** |
+| Dependencias | Necesita PC/Raspberry siempre | **Solo WiFi** |
+| Desarrollo | Java (B4J) - proyecto muerto | **C++ activo** |
+| Comunidad | Abandonada | **5000+ en Discord** |
+| Actualizaciones | Ninguna desde 2022 | **Activas** |
+| Hardware | ESP8266 (limitado) | **ESP32 (potente)** |
+
+**Conclusion:** Desarrollar en AWTRIX 3 es mejor porque el proyecto esta vivo y todo corre en el ESP32.
+
+---
+
+## ESP32 - Cual Modelo Usar
+
+### Modelos Recomendados (probados con AWTRIX 3)
+
+| Modelo | Precio | Notas | Recomendacion |
+|--------|--------|-------|---------------|
+| **ESP32-WROOM-32** | ~$5 | El clasico, funciona perfecto | Mejor opcion generica |
+| **ESP32 D1 Mini** | ~$4 | Compacto, compatible con placa AWTRIX 2 | Si tienes hardware AWTRIX 2 |
+| **NodeMCU-32S** | ~$5 | Facil de usar, muchos pines | Buena opcion |
+| **Ulanzi TC001** | ~$50 | Todo integrado (ESP32 + matriz + case) | Plug & play |
+
+### Funcionan pero no ideales
+
+| Modelo | Notas |
+|--------|-------|
+| ESP32-S2 | Sin Bluetooth, menos RAM |
+| ESP32-C3 | RISC-V, menos compatible |
+| ESP32-S3 | Funciona pero overkill |
+
+### NO usar
+
+| Modelo | Por que |
+|--------|---------|
+| ESP8266 | Sin suficiente RAM/Flash para AWTRIX 3 |
+| ESP32-C2 | Muy limitado |
+
+### Especificaciones Minimas
+
+```
+CPU:        240 MHz dual-core (ESP32 estandar)
+Flash:      4 MB minimo
+RAM:        520 KB (SRAM)
+WiFi:       802.11 b/g/n
+GPIO libre: 1 pin para datos de LEDs (GPIO32 recomendado)
+```
+
+### Recomendacion de Compra
+
+**Para empezar desarrollo (economico):**
+
+```
+ESP32-WROOM-32 DevKit     ~$5 (AliExpress)
+Matriz WS2812B 32x8       ~$10-15
+Fuente 5V 4A              ~$5
+─────────────────────────────────
+Total:                    ~$20-25
+```
+
+**Si quieres todo listo:**
+
+```
+Ulanzi TC001              ~$50
+(Ya tiene ESP32 + matriz + case + sensores)
+```
+
+### Conexion Basica ESP32 Generico
+
+```
+ESP32                Matriz WS2812B
+─────                ─────────────
+GPIO32  ────────────► DIN
+GND     ────────────► GND
+5V (externa) ───────► VCC
+
+Nota: Alimentar matriz con fuente externa 5V 4A
+      No usar el 5V del ESP32 (no tiene suficiente corriente)
+```
+
+---
+
 ## Links de Descarga
 
 | Herramienta | URL |
 |-------------|-----|
 | VS Code | https://code.visualstudio.com/ |
-| PlatformIO (extensión) | Instalar desde VS Code |
+| PlatformIO (extension) | Instalar desde VS Code |
 | B4J | https://www.b4x.com/b4j.html |
 | IntelliJ IDEA | https://www.jetbrains.com/idea/download/ |
 | Arduino IDE | https://www.arduino.cc/en/software |
+
+---
+
+## Links de Compra Hardware
+
+| Componente | Donde comprar |
+|------------|---------------|
+| ESP32-WROOM-32 | AliExpress, Amazon, MercadoLibre |
+| Matriz WS2812B 32x8 | AliExpress, Amazon |
+| Ulanzi TC001 | Amazon, Ulanzi.com, AliExpress |
+| Fuente 5V 4A | Amazon, tiendas electronica |
 
 ---
 
