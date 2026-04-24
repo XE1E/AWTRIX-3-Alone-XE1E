@@ -1,26 +1,44 @@
-# AWTRIX 3 - Guía de Instalación y Desarrollo
+# AWTRIX 3 Alone - Guia de Desarrollo XE1E
 
 ## Repositorio
-- **Tu Fork:** https://github.com/XE1E/awtrix3-XE1E
-- **Original:** https://github.com/Blueforcer/awtrix3
-- **Documentación:** https://blueforcer.github.io/awtrix3/
+- **GitHub:** https://github.com/XE1E/AWTRIX-3-Alone-XE1E
+- **Local:** `D:\Documents\Raspi\AWTRIX-3-Alone-XE1E`
+- **Basado en:** AWTRIX 3 por Blueforcer
 
 ---
 
-# PARTE 1: INSTALACIÓN CON ESP32 + MATRIZ WS2812B 32x8
+## Objetivo del Proyecto
 
-## Materiales necesarios
+Crear una version de AWTRIX 3 que sea 100% standalone:
+- Todo corre en el ESP32
+- Sin necesidad de Node-RED, Home Assistant, ni servidores externos
+- Solo requiere WiFi y API key de OpenWeather (gratis)
 
-| Componente | Descripción | Notas |
-|------------|-------------|-------|
-| ESP32 | ESP32-WROOM, NodeMCU-32S, o ESP32 D1 Mini | Cualquier variante funciona |
-| Matriz LED | WS2812B 32x8 (256 LEDs) | Flexible o rígida |
-| Fuente 5V | 5V 4A mínimo | Los LEDs consumen ~60mA cada uno a brillo máximo |
-| Cables | Dupont o soldados | 3 cables: VCC, GND, DATA |
-| Capacitor | 1000µF 6.3V (opcional) | Protege los LEDs de picos |
-| Resistencia | 330Ω (opcional) | En línea de datos, protege el primer LED |
+---
 
-## Diagrama de conexión
+## Funcionalidades a Implementar
+
+| Funcion | Modulo | Estado | Fuente de datos |
+|---------|--------|--------|-----------------|
+| Reloj | Ya existe | Listo | NTP |
+| Fecha/Calendario | Ya existe | Listo | Local |
+| Temperatura local | Ya existe | Listo | Sensor BME280/SHT31 |
+| Humedad local | Ya existe | Listo | Sensor BME280/SHT31 |
+| **Clima online** | WeatherManager | Creado | OpenWeather API |
+| **ICA/AQI** | WeatherManager | Creado | OpenWeather API |
+| **Fases lunares** | MoonPhase | Creado | Calculo local |
+| Animaciones/GIFs | Ya existe | Listo | Filesystem |
+
+---
+
+## Hardware Soportado
+
+| Dispositivo | Estado |
+|-------------|--------|
+| Ulanzi TC001 | Soportado |
+| ESP32 + Matriz WS2812B custom | Soportado |
+
+## Conexiones (Build Custom)
 
 ```
                     ESP32                         MATRIZ WS2812B 32x8
@@ -28,444 +46,434 @@
                  |         |                      |                  |
     USB -------->|   USB   |                      |   32 x 8 LEDs    |
                  |         |                      |                  |
-                 |  GPIO32 |---[330Ω]------------>| DIN (Data In)    |
+                 |  GPIO32 |---[330R]------------>| DIN (Data In)    |
                  |         |                      |                  |
                  |    GND  |--------------------->| GND              |
                  |         |                      |                  |
                  |    5V   |--------------------->| 5V / VCC         |
                  +---------+                      +------------------+
                       |                                   |
-                      +----------- GND común -------------+
+                      +----------- GND comun -------------+
                                       |
-                               [1000µF cap]
+                               [1000uF cap]
                                       |
                               Fuente 5V 4A
 ```
 
-## Conexiones pin a pin
+### Conexiones opcionales
 
-| ESP32 GPIO | Conectar a | Descripción |
+| ESP32 GPIO | Componente | Descripcion |
 |------------|------------|-------------|
-| **GPIO32** | DIN de la matriz | Datos de los LEDs (obligatorio) |
-| **GND** | GND de la matriz Y fuente | Tierra común (obligatorio) |
-| **5V/VIN** | 5V de la fuente | Alimentación (obligatorio) |
-
-### Conexiones opcionales (mejoran la experiencia)
-
-| ESP32 GPIO | Componente | Descripción |
-|------------|------------|-------------|
-| GPIO35 | LDR (fotoresistor GL5516) | Brillo automático según luz ambiente |
-| GPIO26 | Botón izquierdo | Navegación menú |
-| GPIO27 | Botón central | Seleccionar |
-| GPIO14 | Botón derecho | Navegación menú |
-| GPIO15 | Buzzer pasivo | Sonidos y alarmas |
-| GPIO21 (SDA) | Sensor temp (BME280/SHT31) | Temperatura y humedad |
-| GPIO22 (SCL) | Sensor temp (BME280/SHT31) | I2C Clock |
-
-## Paso 1: Preparar el hardware
-
-1. **Conecta la matriz al ESP32:**
-   - GPIO32 → DIN de la matriz (con resistencia 330Ω opcional)
-   - GND del ESP32 → GND de la matriz
-   
-2. **Conecta la fuente de alimentación:**
-   - 5V de la fuente → 5V de la matriz
-   - GND de la fuente → GND de la matriz Y GND del ESP32
-   - (El ESP32 se puede alimentar por USB o por la fuente)
-
-3. **Importante:** GND debe ser común entre ESP32, matriz y fuente.
-
-## Paso 2: Flashear el firmware
-
-### Opción A: Flasher online (más fácil)
-
-1. Abre Google Chrome o Microsoft Edge
-2. Ve a: https://blueforcer.github.io/awtrix3/#/flasher
-3. Conecta el ESP32 por USB
-4. Selecciona el puerto COM
-5. Marca "Erase" si es la primera vez
-6. Haz clic en "Flash"
-
-### Opción B: Compilar desde código (para desarrollo)
-
-```bash
-# 1. Instalar PlatformIO en VS Code
-#    - Abre VS Code
-#    - Ve a Extensions (Ctrl+Shift+X)
-#    - Busca "PlatformIO IDE"
-#    - Instalar
-
-# 2. Abrir el proyecto
-#    - File > Open Folder > D:\Documents\Raspi\awtrix\awtrix3
-
-# 3. Compilar (desde terminal de PlatformIO)
-cd D:\Documents\Raspi\awtrix\awtrix3
-pio run -e ulanzi
-
-# 4. Subir al ESP32 (conectado por USB)
-pio run -e ulanzi --target upload
-
-# 5. Ver logs de debug
-pio device monitor
-```
-
-## Paso 3: Configurar WiFi
-
-1. Después de flashear, el ESP32 crea una red WiFi:
-   - **Nombre:** `awtrix_XXXXX`
-   - **Contraseña:** `12345678`
-
-2. Conéctate a esa red desde tu celular o PC
-
-3. Abre el navegador y ve a: `http://192.168.4.1`
-
-4. Ingresa los datos de tu WiFi y guarda
-
-5. El dispositivo se reinicia y se conecta a tu red
-
-## Paso 4: Acceder a la interfaz web
-
-1. Busca la IP del dispositivo (aparece en la matriz al conectar)
-2. Abre `http://[IP-DEL-DISPOSITIVO]` en tu navegador
-3. Configura MQTT, apps, y otras opciones
-
-## Solución de problemas
-
-### La matriz muestra caracteres raros o invertidos
-
-Crea un archivo `dev.json` en el administrador de archivos web con:
-
-```json
-{
-  "matrix": 2
-}
-```
-
-Prueba con valores 0, 1, o 2 hasta que se vea correctamente.
-
-### No enciende ningún LED
-
-- Verifica que GPIO32 esté conectado a DIN
-- Verifica que GND sea común
-- Verifica que la fuente tenga suficiente corriente (4A)
-
-### El ESP32 se reinicia constantemente
-
-- La fuente no tiene suficiente corriente
-- Baja el brillo en la configuración
+| GPIO35 | LDR (fotoresistor) | Brillo automatico |
+| GPIO26 | Boton izquierdo | Navegacion |
+| GPIO27 | Boton central | Seleccionar |
+| GPIO14 | Boton derecho | Navegacion |
+| GPIO21 (SDA) | Sensor temp | BME280/SHT31 |
+| GPIO22 (SCL) | Sensor temp | I2C Clock |
 
 ---
 
-# PARTE 2: DESARROLLO Y MODIFICACIÓN
+## Archivos Nuevos Creados
 
-## Estructura del código fuente
+### src/WeatherManager.h / .cpp
+Cliente HTTP para OpenWeather API.
 
+**Datos que obtiene:**
+- Temperatura actual y sensacion termica
+- Humedad, presion, viento
+- Condicion del clima (soleado, nublado, lluvia, etc.)
+- PM2.5, PM10, O3, NO2, CO (contaminantes)
+- Calculo de AQI segun escala US EPA
+
+**Uso:**
+```cpp
+#include "WeatherManager.h"
+
+// En setup()
+WeatherManager.apiKey = "tu_api_key";
+WeatherManager.latitude = "19.4326";
+WeatherManager.longitude = "-99.1332";
+WeatherManager.setup();
+
+// En loop()
+WeatherManager.tick();  // Actualiza cada 15 min automaticamente
+
+// Acceder a datos
+float temp = WeatherManager.temperature;
+int aqi = WeatherManager.aqi;
+uint32_t color = WeatherManager.getAQIColor();
 ```
-src/
-├── main.cpp              # Punto de entrada, setup() y loop()
-├── DisplayManager.cpp    # Control matriz LED (archivo principal)
-├── Apps.cpp              # Sistema de aplicaciones
-├── MQTTManager.cpp       # Integración MQTT / Home Assistant
-├── ServerManager.cpp     # API HTTP REST
-├── PeripheryManager.cpp  # Sensores, botones, buzzer
-├── MenuManager.cpp       # Menú en pantalla
-├── Overlays.cpp          # Notificaciones superpuestas
-├── effects.cpp           # Efectos visuales
-├── GifPlayer.h           # Reproductor de GIFs
-└── Globals.cpp           # Variables globales
+
+### src/MoonPhase.h / .cpp
+Calculo matematico de fases lunares (sin API externa).
+
+**Datos que calcula:**
+- Fase actual (nueva, creciente, llena, menguante, etc.)
+- Dia del ciclo (0-29)
+- Porcentaje de iluminacion
+- Dias hasta proxima luna llena/nueva
+
+**Uso:**
+```cpp
+#include "MoonPhase.h"
+
+// En setup()
+MoonPhase.setup();
+
+// En loop()
+MoonPhase.tick();  // Actualiza cada hora
+
+// Acceder a datos
+String fase = MoonPhase.phaseName;  // "Luna Llena"
+int illumination = MoonPhase.illumination;  // 0-100%
+String icono = MoonPhase.getIconName();  // "moon_full"
 ```
 
-## Archivos clave para modificar
+---
 
-| Archivo | Para qué modificarlo |
-|---------|---------------------|
-| `Apps.cpp` | Crear nuevas aplicaciones |
-| `effects.cpp` | Agregar efectos visuales |
-| `DisplayManager.cpp` | Cambiar comportamiento de pantalla |
-| `PeripheryManager.cpp` | Agregar sensores o botones |
-| `Globals.cpp` | Nuevas configuraciones globales |
+## Pasos de Integracion
 
-## Comandos de compilación
+### Paso 1: Agregar variables de configuracion
+
+**Archivo:** `src/Globals.h`
+
+Agregar despues de las otras variables externas:
+```cpp
+// Weather API Configuration
+extern String WEATHER_API_KEY;
+extern String WEATHER_LAT;
+extern String WEATHER_LON;
+extern String WEATHER_UNITS;
+extern String WEATHER_LANG;
+extern bool SHOW_WEATHER;
+extern bool SHOW_AQI;
+extern bool SHOW_MOON;
+```
+
+**Archivo:** `src/Globals.cpp`
+
+Agregar las definiciones:
+```cpp
+// Weather API Configuration
+String WEATHER_API_KEY = "";
+String WEATHER_LAT = "19.4326";
+String WEATHER_LON = "-99.1332";
+String WEATHER_UNITS = "metric";
+String WEATHER_LANG = "es";
+bool SHOW_WEATHER = true;
+bool SHOW_AQI = true;
+bool SHOW_MOON = true;
+```
+
+### Paso 2: Integrar en main.cpp
+
+**Archivo:** `src/main.cpp`
+
+Agregar includes:
+```cpp
+#include "WeatherManager.h"
+#include "MoonPhase.h"
+```
+
+En `setup()`, despues de `ServerManager.setup()`:
+```cpp
+// Configurar Weather Manager
+WeatherManager.apiKey = WEATHER_API_KEY;
+WeatherManager.latitude = WEATHER_LAT;
+WeatherManager.longitude = WEATHER_LON;
+WeatherManager.units = WEATHER_UNITS;
+WeatherManager.lang = WEATHER_LANG;
+WeatherManager.setup();
+
+// Configurar Moon Phase
+MoonPhase.setup();
+```
+
+En `loop()`:
+```cpp
+WeatherManager.tick();
+MoonPhase.tick();
+```
+
+### Paso 3: Crear las Apps visuales
+
+**Archivo:** `src/Apps.h`
+
+Agregar declaraciones:
+```cpp
+void WeatherApp(FastLED_NeoMatrix *matrix, MatrixDisplayUiState *state, int16_t x, int16_t y, GifPlayer *gifPlayer);
+void AQIApp(FastLED_NeoMatrix *matrix, MatrixDisplayUiState *state, int16_t x, int16_t y, GifPlayer *gifPlayer);
+void MoonApp(FastLED_NeoMatrix *matrix, MatrixDisplayUiState *state, int16_t x, int16_t y, GifPlayer *gifPlayer);
+```
+
+**Archivo:** `src/Apps.cpp`
+
+Agregar includes:
+```cpp
+#include "WeatherManager.h"
+#include "MoonPhase.h"
+```
+
+Agregar las funciones de las apps:
+```cpp
+void WeatherApp(FastLED_NeoMatrix *matrix, MatrixDisplayUiState *state, int16_t x, int16_t y, GifPlayer *gifPlayer)
+{
+    if (!WeatherManager.weatherValid) {
+        DisplayManager.printText(x + 7, y + 6, "Weather...", TEXT_COLOR, false);
+        return;
+    }
+
+    // Mostrar icono del clima (posicion x, y)
+    // TODO: Cargar icono desde filesystem
+
+    // Mostrar temperatura
+    String tempStr = String((int)round(WeatherManager.temperature)) + "C";
+    DisplayManager.printText(x + 12, y + 6, tempStr.c_str(), TEXT_COLOR, false);
+}
+
+void AQIApp(FastLED_NeoMatrix *matrix, MatrixDisplayUiState *state, int16_t x, int16_t y, GifPlayer *gifPlayer)
+{
+    if (!WeatherManager.aqiValid) {
+        DisplayManager.printText(x + 7, y + 6, "AQI...", TEXT_COLOR, false);
+        return;
+    }
+
+    // Mostrar AQI con color segun nivel
+    String aqiStr = "ICA " + String(WeatherManager.aqi);
+    uint32_t color = WeatherManager.getAQIColor();
+    DisplayManager.printText(x + 7, y + 6, aqiStr.c_str(), color, false);
+}
+
+void MoonApp(FastLED_NeoMatrix *matrix, MatrixDisplayUiState *state, int16_t x, int16_t y, GifPlayer *gifPlayer)
+{
+    // Mostrar icono de la luna
+    // TODO: Cargar icono desde filesystem
+
+    // Mostrar nombre de la fase
+    DisplayManager.printText(x + 12, y + 6, MoonPhase.phaseName.c_str(), MoonPhase.getPhaseColor(), false);
+}
+```
+
+### Paso 4: Registrar las Apps en el sistema
+
+**Archivo:** `src/DisplayManager.cpp`
+
+En la funcion `loadNativeApps()`, agregar:
+```cpp
+if (SHOW_WEATHER) {
+    Apps.push_back(std::make_pair("Weather", WeatherApp));
+}
+if (SHOW_AQI) {
+    Apps.push_back(std::make_pair("AQI", AQIApp));
+}
+if (SHOW_MOON) {
+    Apps.push_back(std::make_pair("Moon", MoonApp));
+}
+```
+
+### Paso 5: Agregar configuracion en interfaz web
+
+**Archivo:** `src/ServerManager.cpp`
+
+Agregar endpoints para configurar la API key y coordenadas.
+
+En la funcion que maneja `/api/settings` (GET):
+```cpp
+doc["WEATHER_API_KEY"] = WEATHER_API_KEY;
+doc["WEATHER_LAT"] = WEATHER_LAT;
+doc["WEATHER_LON"] = WEATHER_LON;
+doc["SHOW_WEATHER"] = SHOW_WEATHER;
+doc["SHOW_AQI"] = SHOW_AQI;
+doc["SHOW_MOON"] = SHOW_MOON;
+```
+
+En la funcion que maneja `/api/settings` (POST):
+```cpp
+if (doc.containsKey("WEATHER_API_KEY")) {
+    WEATHER_API_KEY = doc["WEATHER_API_KEY"].as<String>();
+    WeatherManager.apiKey = WEATHER_API_KEY;
+}
+if (doc.containsKey("WEATHER_LAT")) {
+    WEATHER_LAT = doc["WEATHER_LAT"].as<String>();
+    WeatherManager.latitude = WEATHER_LAT;
+}
+// ... etc
+```
+
+### Paso 6: Persistir configuracion
+
+**Archivo:** `src/Globals.cpp`
+
+En `saveSettings()`:
+```cpp
+doc["WEATHER_API_KEY"] = WEATHER_API_KEY;
+doc["WEATHER_LAT"] = WEATHER_LAT;
+doc["WEATHER_LON"] = WEATHER_LON;
+doc["SHOW_WEATHER"] = SHOW_WEATHER;
+doc["SHOW_AQI"] = SHOW_AQI;
+doc["SHOW_MOON"] = SHOW_MOON;
+```
+
+En `loadSettings()`:
+```cpp
+WEATHER_API_KEY = doc["WEATHER_API_KEY"] | "";
+WEATHER_LAT = doc["WEATHER_LAT"] | "19.4326";
+WEATHER_LON = doc["WEATHER_LON"] | "-99.1332";
+SHOW_WEATHER = doc["SHOW_WEATHER"] | true;
+SHOW_AQI = doc["SHOW_AQI"] | true;
+SHOW_MOON = doc["SHOW_MOON"] | true;
+```
+
+---
+
+## Iconos Necesarios
+
+Crear iconos de 8x8 pixeles para el filesystem:
+
+### Clima
+| Archivo | Descripcion |
+|---------|-------------|
+| weather_clear.gif | Sol |
+| weather_clouds.gif | Nubes |
+| weather_rain.gif | Lluvia |
+| weather_drizzle.gif | Llovizna |
+| weather_storm.gif | Tormenta |
+| weather_snow.gif | Nieve |
+| weather_mist.gif | Niebla |
+
+### Luna
+| Archivo | Descripcion |
+|---------|-------------|
+| moon_new.gif | Luna nueva |
+| moon_waxing_crescent.gif | Creciente |
+| moon_first_quarter.gif | Cuarto creciente |
+| moon_waxing_gibbous.gif | Gibosa creciente |
+| moon_full.gif | Luna llena |
+| moon_waning_gibbous.gif | Gibosa menguante |
+| moon_last_quarter.gif | Cuarto menguante |
+| moon_waning_crescent.gif | Menguante |
+
+---
+
+## Comandos de Compilacion
 
 ```bash
-# Compilar sin subir
+# Compilar
 pio run -e ulanzi
 
 # Compilar y subir
 pio run -e ulanzi --target upload
 
-# Solo subir (si ya compilaste)
-pio run -e ulanzi --target uploadfs
-
-# Monitor serial (115200 baud)
+# Monitor serial
 pio device monitor
 
-# Limpiar build
+# Limpiar
 pio run -e ulanzi --target clean
 ```
 
-## Sincronizar con el repositorio original
+---
 
-```bash
-# Obtener cambios del repo original
-git fetch upstream
+## API de OpenWeather
 
-# Fusionar a tu rama
-git checkout main
-git merge upstream/main
+### Obtener API Key (gratis)
+1. Registrarse en: https://openweathermap.org/api
+2. Ir a "API Keys" en tu perfil
+3. El key tarda ~10 minutos en activarse
 
-# Subir a tu fork
-git push origin main
+### Limites del plan gratuito
+- 1,000 llamadas/dia
+- 60 llamadas/minuto
+- Con actualizacion cada 15 min: ~96 llamadas/dia (sobra mucho)
+
+### Endpoints usados
 ```
+# Clima actual
+GET api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={key}&units=metric&lang=es
 
-## Librerías principales
-
-| Librería | Uso |
-|----------|-----|
-| FastLED | Control de LEDs WS2812B |
-| FastLED NeoMatrix | Gestión de matriz |
-| ArduinoJson | Parsing JSON |
-| PubSubClient | Cliente MQTT |
-| EasyButton | Manejo de botones |
-| Adafruit BME280/SHT31 | Sensores de temperatura |
-
-## Notas técnicas
-
-- CPU: ESP32 a 240MHz
-- Framework: Arduino
-- Tamaño máximo paquete MQTT: 8192 bytes
-- Puerto serial: 115200 baud
-- Pin matriz LED: GPIO32 (hardcoded en DisplayManager.cpp línea 40)
+# Calidad del aire
+GET api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={key}
+```
 
 ---
 
-# PARTE 3: FLOWS - APLICACIONES EXTERNAS
+## Escala AQI (US EPA)
 
-## Qué son los Flows
+| AQI | Nivel | Color | PM2.5 (ug/m3) |
+|-----|-------|-------|---------------|
+| 0-50 | Bueno | #00E400 (Verde) | 0-12 |
+| 51-100 | Moderado | #FFFF00 (Amarillo) | 12.1-35.4 |
+| 101-150 | Insalubre (sensibles) | #FF7E00 (Naranja) | 35.5-55.4 |
+| 151-200 | Insalubre | #FF0000 (Rojo) | 55.5-150.4 |
+| 201-300 | Muy insalubre | #8F3F97 (Morado) | 150.5-250.4 |
+| 301+ | Peligroso | #7E0023 (Marron) | 250.5+ |
 
-Los **Flows** son automatizaciones externas que envían contenido a AWTRIX 3 mediante MQTT o HTTP.
-No corren en el ESP32, sino en sistemas externos como Node-RED, Home Assistant, etc.
+---
 
-```
-[Fuente de datos]  →  [Node-RED/HA]  →  [MQTT/HTTP]  →  [AWTRIX 3]
-   (API externa)       (procesa)        (envía JSON)    (muestra en matriz)
-```
+## Fases Lunares
 
-## Hub de Flows comunitarios
+| Dias del ciclo | Fase | Emoji |
+|----------------|------|-------|
+| 0-1, 29 | Luna nueva | new |
+| 2-6 | Creciente | waxing_crescent |
+| 7-8 | Cuarto creciente | first_quarter |
+| 9-13 | Gibosa creciente | waxing_gibbous |
+| 14-16 | Luna llena | full |
+| 17-21 | Gibosa menguante | waning_gibbous |
+| 22-23 | Cuarto menguante | last_quarter |
+| 24-28 | Menguante | waning_crescent |
 
-**https://flows.blueforcer.de/**
+Ciclo lunar completo: 29.53 dias
 
-- Descargar flows listos para usar
-- Subir tus propios flows
-- Compartir iconos incluidos
-- No requiere login
+---
 
-## Plataformas soportadas
+## Historial de Cambios
 
-| Plataforma | Descripción | Instalación |
-|------------|-------------|-------------|
-| **Node-RED** | Visual, ideal para principiantes | `npm install -g node-red` |
-| **Home Assistant** | Blueprints y automations | Addon de HA |
-| **N8N** | Alternativa a Node-RED | Docker o npm |
-| **ioBroker** | Smarthome | Instalador propio |
-| **FHEM** | Perl-based | apt install |
-| **Domoticz** | Domótica ligera | apt install |
+### 2026-04-24 - Creacion del proyecto
+- Fork de AWTRIX 3
+- Creado WeatherManager.cpp/h
+- Creado MoonPhase.cpp/h
+- Documentacion inicial
+- Repositorio en GitHub: https://github.com/XE1E/AWTRIX-3-Alone-XE1E
 
-## API para Custom Apps
+---
 
-### Enviar texto via HTTP
+## Checklist de Desarrollo
 
-```bash
-# Crear/actualizar una app personalizada
-curl -X POST http://[IP-AWTRIX]/api/custom?name=miapp \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Hola mundo", "icon": 1234, "color":"#FF0000"}'
+### Modulos base
+- [x] Crear WeatherManager.cpp/h
+- [x] Crear MoonPhase.cpp/h
+- [x] Documentar estructura
 
-# Eliminar una app
-curl -X POST http://[IP-AWTRIX]/api/custom?name=miapp \
-  -d ''
-```
+### Integracion
+- [ ] Agregar variables en Globals.h
+- [ ] Agregar variables en Globals.cpp
+- [ ] Integrar en main.cpp setup()
+- [ ] Integrar en main.cpp loop()
 
-### Enviar texto via MQTT
+### Apps visuales
+- [ ] Crear WeatherApp en Apps.cpp
+- [ ] Crear AQIApp en Apps.cpp
+- [ ] Crear MoonApp en Apps.cpp
+- [ ] Registrar apps en DisplayManager.cpp
 
-```
-Topic: awtrix/custom/miapp
-Payload: {"text":"Hola mundo", "icon": 1234, "color":"#FF0000"}
-```
+### Configuracion web
+- [ ] Agregar GET en ServerManager.cpp
+- [ ] Agregar POST en ServerManager.cpp
+- [ ] Persistir en saveSettings()
+- [ ] Cargar en loadSettings()
 
-### Enviar notificación (temporal, no se guarda en loop)
+### Iconos
+- [ ] Crear iconos de clima (8x8 gif)
+- [ ] Crear iconos de luna (8x8 gif)
+- [ ] Subir al filesystem
 
-```bash
-# HTTP
-curl -X POST http://[IP-AWTRIX]/api/notify \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Alerta!", "icon": 555, "duration": 10}'
+### Pruebas
+- [ ] Compilar sin errores
+- [ ] Probar en hardware
+- [ ] Verificar llamadas a API
+- [ ] Ajustar posiciones visuales
 
-# MQTT
-Topic: awtrix/notify
-Payload: {"text":"Alerta!", "icon": 555, "duration": 10}
-```
+---
 
-## Propiedades JSON disponibles
-
-| Propiedad | Tipo | Descripción | Ejemplo |
-|-----------|------|-------------|---------|
-| `text` | string | Texto a mostrar | `"Hola"` |
-| `icon` | number | ID del icono (de LaMetric o subido) | `1234` |
-| `color` | string/array | Color del texto | `"#FF0000"` o `[255,0,0]` |
-| `background` | string/array | Color de fondo | `"#000000"` |
-| `duration` | number | Duración en segundos | `10` |
-| `scroll` | bool | Activar scroll | `true` |
-| `scrollSpeed` | number | Velocidad de scroll (ms) | `100` |
-| `effect` | string | Efecto de fondo | `"Fade"` |
-| `progress` | number | Barra de progreso (0-100) | `75` |
-| `progressC` | string | Color de la barra | `"#00FF00"` |
-| `repeat` | number | Repeticiones (notificaciones) | `3` |
-| `sound` | string | Sonido a reproducir | `"alarm"` |
-| `rtttl` | string | Melodía RTTTL | `"melody:d=4,o=5..."` |
-| `pushIcon` | number | Animación del icono (0,1,2) | `1` |
-| `lifetime` | number | Tiempo de vida en segundos | `3600` |
-| `noScroll` | bool | Desactivar scroll | `true` |
-| `center` | bool | Centrar texto | `true` |
-
-## Ejemplo: Flow Node-RED para YouTube
-
-Este flow obtiene suscriptores de YouTube y los muestra en AWTRIX:
-
-### Estructura del flow
-
-```
-[Inject cada 1h] → [Function: API key] → [HTTP Request] → [Function: Parser] → [MQTT Out]
-```
-
-### Código del nodo "Data" (Function)
-
-```javascript
-msg.payload = {
-  "id": "TU_CHANNEL_ID",
-  "key": "TU_API_KEY",
-  "part": "statistics"
-};
-return msg;
-```
-
-### Código del nodo "Parser" (Function)
-
-```javascript
-var json = msg.payload;
-var subscribers = json.items[0].statistics.subscriberCount;
-
-msg.payload = {
-  "text": subscribers,
-  "icon": 5029
-};
-return msg;
-```
-
-### Configuración MQTT Out
-
-```
-Topic: awtrix/custom/youtube
-Broker: localhost:1883
-```
-
-## Instalar Node-RED
-
-### En Windows
-
-```bash
-# Instalar Node.js primero desde https://nodejs.org
-
-# Instalar Node-RED
-npm install -g node-red
-
-# Ejecutar
-node-red
-
-# Abrir en navegador
-http://localhost:1880
-```
-
-### En Raspberry Pi
-
-```bash
-# Script de instalación oficial
-bash <(curl -sL https://raw.githubusercontent.com/node-red/linux-installers/master/deb/update-nodejs-and-nodered)
-
-# Habilitar como servicio
-sudo systemctl enable nodered
-sudo systemctl start nodered
-
-# Abrir en navegador
-http://[IP-RASPBERRY]:1880
-```
-
-### Nodos útiles para instalar
-
-En Node-RED, ve a Menu → Manage Palette → Install:
-
-| Nodo | Para qué |
-|------|----------|
-| `node-red-contrib-home-assistant` | Integrar Home Assistant |
-| `node-red-dashboard` | Crear dashboards web |
-| `node-red-contrib-influxdb` | Base de datos de métricas |
-| `node-red-contrib-telegrambot` | Enviar/recibir Telegram |
-
-## Flows populares disponibles
-
-| Flow | Descripción | Plataforma |
-|------|-------------|------------|
-| YouTube Subscribers | Muestra suscriptores | Node-RED |
-| Instagram Followers | Seguidores de IG | Node-RED |
-| OpenWeather | Clima actual y pronóstico | Node-RED / HA |
-| SpeedTest | Velocidad de internet | Node-RED |
-| WooCommerce | Notifica pedidos | N8N |
-| Spotify Now Playing | Canción actual | Home Assistant |
-| Crypto Prices | Bitcoin, ETH, etc. | Node-RED |
-| Calendar Events | Próximos eventos | Home Assistant |
-| Printer Status | Estado impresora 3D | Node-RED |
-| Energy Monitor | Consumo eléctrico | Home Assistant |
-
-## Otros endpoints útiles de la API
-
-| Endpoint | Método | Descripción |
-|----------|--------|-------------|
-| `/api/stats` | GET | Estado del dispositivo |
-| `/api/screen` | GET | Captura de pantalla actual |
-| `/api/power` | POST | Encender/apagar matriz |
-| `/api/indicator1` | POST | LED indicador esquina |
-| `/api/effects` | GET | Lista de efectos |
-| `/api/transitions` | GET | Lista de transiciones |
-| `/api/loop` | GET | Apps en rotación |
-| `/api/reboot` | POST | Reiniciar dispositivo |
-| `/api/sound` | POST | Reproducir sonido |
-| `/api/moodlight` | POST | Luz ambiente |
-
-## Ejemplo: Indicadores de color
-
-```bash
-# Indicador rojo parpadeante (esquina superior derecha)
-curl -X POST http://[IP]/api/indicator1 \
-  -d '{"color":"#FF0000", "blink": 500}'
-
-# Indicador verde fijo (lado derecho)
-curl -X POST http://[IP]/api/indicator2 \
-  -d '{"color":[0,255,0]}'
-
-# Apagar indicador
-curl -X POST http://[IP]/api/indicator1 \
-  -d '{"color":"0"}'
-```
-
-## Ejemplo: Control de energía
-
-```bash
-# Apagar matriz (pantalla negra, ESP32 sigue funcionando)
-curl -X POST http://[IP]/api/power -d '{"power": false}'
-
-# Encender matriz
-curl -X POST http://[IP]/api/power -d '{"power": true}'
-
-# Modo sleep por 1 hora (3600 segundos)
-curl -X POST http://[IP]/api/sleep -d '{"sleep": 3600}'
-```
+*Documento creado: 2026-04-24*
+*Mantener actualizado con cada cambio*
