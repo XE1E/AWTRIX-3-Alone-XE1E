@@ -261,6 +261,66 @@ Nota: Alimentar matriz con fuente externa 5V 4A
 
 ---
 
+## Compatibilidad ESP8266 vs ESP32
+
+**AWTRIX 3 NO es compatible con ESP8266.** Razones:
+
+| Recurso | ESP8266 | ESP32 | AWTRIX 3 necesita |
+|---------|---------|-------|-------------------|
+| RAM | 80 KB | 520 KB | ~300 KB |
+| CPU | 1 core 80MHz | 2 cores 240MHz | Dual core |
+| Flash | 4 MB | 4 MB | OK |
+| WiFi | Si | Si | OK |
+| Bluetooth | No | Si | Opcional |
+
+**Conclusion:** Si tienes ESP8266, solo sirve para AWTRIX 2 (con servidor Java).
+
+---
+
+## Desarrollo sin Hardware (mientras consigues matriz)
+
+### Lo que puedes hacer SIN matriz LED
+
+| Tarea | Requiere matriz |
+|-------|-----------------|
+| Instalar PlatformIO + VS Code | No |
+| Compilar codigo | No |
+| Verificar errores de compilacion | No |
+| Integrar nuevos modulos | No |
+| Modificar y probar logica | No |
+| Flashear al ESP32 | No (solo ESP32 por USB) |
+| Ver resultado en LEDs | **Si** |
+| Probar apps visuales | **Si** |
+
+### Setup de desarrollo paralelo
+
+```
+ESP8266 NodeMCU v3              ESP32 30-pin USB-C
+       │                               │
+       ▼                               ▼
+┌─────────────────┐            ┌─────────────────┐
+│   AWTRIX 2      │            │   AWTRIX 3      │
+│   (produccion)  │            │   (desarrollo)  │
+│                 │            │                 │
+│ Sigue corriendo │            │ Pruebas nuevas  │
+│ con tu matriz   │            │ funciones       │
+└─────────────────┘            └─────────────────┘
+```
+
+Esto permite desarrollar sin interrumpir tu reloj actual.
+
+### Donde comprar matriz WS2812B 32x8
+
+| Tienda | Tiempo envio | Precio aprox |
+|--------|--------------|--------------|
+| AliExpress | 2-3 semanas | ~$8-12 USD |
+| Amazon | 1-2 dias | ~$15-20 USD |
+| MercadoLibre | Variable | ~$200-400 MXN |
+
+**Buscar:** "WS2812B 32x8 flexible" o "WS2812B 8x32 panel"
+
+---
+
 ## Links de Descarga
 
 | Herramienta | URL |
