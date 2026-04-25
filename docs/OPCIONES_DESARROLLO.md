@@ -246,6 +246,84 @@ Ulanzi TC001              ~$50
 (Ya tiene ESP32 + matriz + case + sensores)
 ```
 
+---
+
+## Ulanzi TC001 - Hardware Oficial AWTRIX 3
+
+El Ulanzi TC001 es el hardware para el que AWTRIX 3 fue disenado. Es **100% hackeable** y perfecto para desarrollo.
+
+### Que incluye
+
+| Componente | Incluido |
+|------------|----------|
+| ESP32-WROOM-32 | Si (programable) |
+| Matriz LED 32x8 | Si (WS2812B) |
+| Sensor temp/humedad | Si |
+| LDR (auto-brillo) | Si |
+| Buzzer | Si |
+| 3 Botones | Si |
+| Case/carcasa | Si |
+| USB-C | Si (datos + alimentacion) |
+
+### Que puedes hacer con el TC001
+
+| Accion | Posible |
+|--------|---------|
+| Flashear firmware custom | Si |
+| Modificar codigo AWTRIX 3 | Si |
+| Agregar WeatherManager/MoonPhase | Si |
+| Crear nuevas apps | Si |
+| Volver al firmware original | Si |
+| Usar con Home Assistant | Si |
+| Acceder a sensores | Si |
+
+### Arquitectura interna
+
+```
+Ulanzi TC001
+     │
+     ├── ESP32-WROOM-32 ◄── Programable 100%
+     ├── Matriz WS2812B 32x8
+     ├── Sensor temperatura/humedad
+     ├── LDR (luz ambiente)
+     ├── Buzzer
+     ├── 3 Botones
+     └── USB-C (datos + alimentacion)
+```
+
+### Flujo de desarrollo con TC001
+
+```
+1. Conectar TC001 por USB-C
+2. Abrir proyecto AWTRIX-3-Alone-XE1E en VS Code
+3. Modificar codigo (WeatherManager, MoonPhase, etc.)
+4. Compilar: pio run -e ulanzi
+5. Flashear: pio run -e ulanzi -t upload
+6. Ver cambios en el reloj
+7. Repetir
+```
+
+### Target en platformio.ini
+
+```ini
+[env:ulanzi]
+platform = espressif32@6.3.0
+board = esp32dev
+build_flags = -DULANZI
+```
+
+### Donde comprar
+
+| Tienda | Precio aprox |
+|--------|--------------|
+| AliExpress | ~$45-55 USD |
+| Amazon | ~$50-60 USD |
+| Ulanzi.com | ~$50 USD |
+
+**Buscar:** "Ulanzi TC001 Smart Pixel Clock"
+
+---
+
 ### Conexion Basica ESP32 Generico
 
 ```
